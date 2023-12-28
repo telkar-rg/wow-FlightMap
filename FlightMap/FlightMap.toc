@@ -1,0 +1,13 @@
+## Interface: 30300
+## Title: Dhask's FlightMap v3.3
+## Notes: Adds a tooltip to the world map showing flightpaths into and out of regions, and region level ranges.
+## SavedVariables: FlightMap
+## OptionalDeps: myAddOns
+## X-Curse-Packaged-Version: v3.3
+## X-Curse-Project-Name: FlightMap
+## X-Curse-Project-ID: flight-map
+## X-Curse-Repository-ID: wow/flight-map/mainline
+FlightMapUtil.lua
+FlightMap.xml
+FlightMapTimes.xml
+FlightMapTaxi.xml

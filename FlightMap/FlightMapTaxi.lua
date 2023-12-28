@@ -1,3 +1,6 @@
+local AddonName, AddonTable = ...
+local FlightMapUtil = AddonTable.FlightMapUtil
+
 -- Continent number -> TAXIMAPnnn
 local continent_maps = {"1", "0", "530", "571"};
 

@@ -4,33 +4,43 @@
 -- 
 -- This file is loaded after the localisations
 
+local AddonName, AddonTable = ...
+
+
+
 -- Prepare LibBabble
 local B = LibStub('LibBabble-Zone-3.0');
-BabbleZone = B:GetLookupTable();
+AddonTable.BabbleZone = B:GetLookupTable();
+local BabbleZone = AddonTable.BabbleZone
 
 -- Default options
-FLIGHTMAP_DEFAULT_OPTS = {
-     ["showPaths"]   = true,
+AddonTable.FLIGHTMAP_DEFAULT_OPTS = {
+     ["showPaths"]   = false,
      ["showPOIs"]    = true,
-     ["showAllInfo"] = false,
+     ["showAllInfo"] = "1",
      ["useTimer"]    = true,
      ["showCosts"]   = false,
      ["showTimes"]   = false,
      ["fullTaxiMap"] = true,
+     ["largerTimer"] = false,
+     ["xlTimer"] = false,
 };
 
 -- Sub-zones
-FLIGHTMAP_SUBZONES = {
+AddonTable.FLIGHTMAP_SUBZONES = {
     [BabbleZone["Orgrimmar"]]     = BabbleZone["Durotar"],
     [BabbleZone["Thunder Bluff"]] = BabbleZone["Mulgore"],
     [BabbleZone["Undercity"]]     = BabbleZone["Tirisfal Glades"],
+    [BabbleZone["Silvermoon City"]] = BabbleZone["Eversong Woods"],
     [BabbleZone["Ironforge"]]     = BabbleZone["Dun Morogh"],
     [BabbleZone["Stormwind"]]     = BabbleZone["Elwynn Forest"],
     [BabbleZone["Shattrath"]]     = BabbleZone["Terokkar Forest"],
     [BabbleZone["Dalaran"]]       = BabbleZone["Crystalsong Forest"],
 };
 
+AddonTable.NodeNamesShort = {}
+
 FlightMap = {
-    ["Opts"]             = FLIGHTMAP_DEFAULT_OPTS,
+    ["Opts"]             = AddonTable.FLIGHTMAP_DEFAULT_OPTS,
     ["Knowledge"]        = {},
 };

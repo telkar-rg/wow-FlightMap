@@ -66,42 +66,53 @@ FLIGHTMAP_OPTIONS[3] = {   -- Option 3: Unknown masters
     option = "showAllInfo",
     tooltip = "Show all data, even for unvisited flight masters.",
 };
-FLIGHTMAP_OPTIONS[4] = {   -- Option 5: flight timers
+FLIGHTMAP_OPTIONS[4] = {   -- Option 4: flight timers
     label = "In-flight timers",
     option = "useTimer",
     tooltip = "Enable/disable the flight duration meter.",
 };
 
-FLIGHTMAP_OPTIONS[5] = {   -- Option 6: Show flight destinations
+FLIGHTMAP_OPTIONS[5] = {   -- Option 5: Show flight destinations
     label = "Show destinations",
     option = "showDestinations",
     tooltip = "Show flight destinations on tooltips",
     children = {6, 7, 8},
 };
-FLIGHTMAP_OPTIONS[6] = {   -- Option 7: Show multi-hop destinations
+FLIGHTMAP_OPTIONS[6] = {   -- Option 6: Show multi-hop destinations
     label = "Including multi-hop",
     option = "showMultiHop",
     tooltip = "Show multi-hop destinations on tooltips",
 };
-FLIGHTMAP_OPTIONS[7] = {   -- Option 8: Show flight times
+FLIGHTMAP_OPTIONS[7] = {   -- Option 7: Show flight times
     label = "With flight times",
     option = "showTimes",
     tooltip = "Show flight times on tooltips.",
 };
-FLIGHTMAP_OPTIONS[8] = {   -- Option 9: Show flight costs
+FLIGHTMAP_OPTIONS[8] = {   -- Option 8: Show flight costs
     label = "With flight costs",
     option = "showCosts",
     tooltip = "Show flight costs on tooltips.",
 };
-FLIGHTMAP_OPTIONS[9] = {   -- Option 10: Taxi window extras
+FLIGHTMAP_OPTIONS[9] = {   -- Option 9: Taxi window extras
     label = "Enhanced flight window",
     option = "fullTaxiMap",
     tooltip = "Show flight network on flight selection window",
 };
-FLIGHTMAP_OPTIONS[10] = {   -- Option 11: Confirm flight destinations
+FLIGHTMAP_OPTIONS[10] = {   -- Option 10: Confirm flight destinations
     label = "Confirm flights",
     option = "confirmFlights",
     tooltip = "Prompt for confirmation before taking a flight",
+};
+FLIGHTMAP_OPTIONS[11] = {   -- Option 11: Larger Timer Window
+    label = "Larger Timer Window",
+    option = "largerTimer",
+    tooltip = "Use a larger timer window",
+    children = { 12 },
+};
+FLIGHTMAP_OPTIONS[12] = {   -- Option 12: XL Timer window
+    label = "Extra large Timer Window",
+    option = "xlTimer",
+    tooltip = "Use an even larger timer window",
 };
 
 -- These constants determine how "Town, Zone" strings look.

@@ -3,30 +3,48 @@
 --             zone on the World Map.  Additionally shows flight costs and
 --             zone level ranges.
 -- Copyright (c) 2005-2007 Byron Ellacott (Dhask of Uther)
+-- Copyright (c) 2009-2010 Moncai
 --
 -- An unlimited license to use, reproduce and copy this work is granted, on
 -- the condition that the licensee accepts all responsibility and liability
 -- for any damage that may arise from the use of this AddOn.
 
+local AddonName, AddonTable = ...
+local FLIGHTMAP_SUBZONES = AddonTable.FLIGHTMAP_SUBZONES
+local FLIGHTMAP_DEFAULT_OPTS = AddonTable.FLIGHTMAP_DEFAULT_OPTS
+local FlightMapUtil = AddonTable.FlightMapUtil
+local BabbleZone = AddonTable.BabbleZone
+
 -- Version number
-FLIGHTMAP_VERSION   = "3.0-2";
+AddonTable.FLIGHTMAP_VERSION   = "3.3.3";
 
 -- Size and names for path texture files
-FLIGHTMAP_LINE_SIZE = 256;
-FLIGHTMAP_TEX_UP    = "Interface\\AddOns\\FlightMap\\FlightMapUp";
-FLIGHTMAP_TEX_DOWN  = "Interface\\AddOns\\FlightMap\\FlightMapDown";
+AddonTable.FLIGHTMAP_LINE_SIZE = 256;
+AddonTable.FLIGHTMAP_TEX_UP    = "Interface\\AddOns\\FlightMap\\FlightMapUp";
+AddonTable.FLIGHTMAP_TEX_DOWN  = "Interface\\AddOns\\FlightMap\\FlightMapDown";
+local FLIGHTMAP_LINE_SIZE 	= AddonTable.FLIGHTMAP_LINE_SIZE;
+local FLIGHTMAP_TEX_UP 		= AddonTable.FLIGHTMAP_TEX_UP;
+local FLIGHTMAP_TEX_DOWN 	= AddonTable.FLIGHTMAP_TEX_DOWN;
 
 -- How many pixels is too close to another POI?
-FLIGHTMAP_CLOSE     = 16;
+AddonTable.FLIGHTMAP_CLOSE     = 16;
+local FLIGHTMAP_CLOSE 	= AddonTable.FLIGHTMAP_CLOSE;
 
 -- Textures for flightmaster POI icons
-FLIGHTMAP_POI_KNOWN = "Interface\\TaxiFrame\\UI-Taxi-Icon-Green";
-FLIGHTMAP_POI_OTHER = "Interface\\TaxiFrame\\UI-Taxi-Icon-Gray";
+AddonTable.FLIGHTMAP_POI_KNOWN = "Interface\\TaxiFrame\\UI-Taxi-Icon-Green";
+AddonTable.FLIGHTMAP_POI_OTHER = "Interface\\TaxiFrame\\UI-Taxi-Icon-Gray";
+AddonTable.FLIGHTMAP_POI_QUEST = "Interface\\TaxiFrame\\UI-Taxi-Icon-Yellow";
+AddonTable.FLIGHTMAP_POI_QUESTNONE = "Interface\\TaxiFrame\\UI-Taxi-Icon-Red";
+local FLIGHTMAP_POI_KNOWN = AddonTable.FLIGHTMAP_POI_KNOWN
+local FLIGHTMAP_POI_OTHER = AddonTable.FLIGHTMAP_POI_OTHER
+local FLIGHTMAP_POI_QUEST = AddonTable.FLIGHTMAP_POI_QUEST
+local FLIGHTMAP_POI_QUESTNONE = AddonTable.FLIGHTMAP_POI_QUESTNONE
 
 local lTYPE_HORDE     = FLIGHTMAP_HORDE;
 local lTYPE_ALLIANCE  = FLIGHTMAP_ALLIANCE;
 local lTYPE_CONTESTED = FLIGHTMAP_CONTESTED;
 local lTYPE_NEUTRAL   = FLIGHTMAP_NEUTRAL;
+
 
 ------------------ Data access functions ------------------
 
@@ -76,6 +94,18 @@ local function lRelocateNode(newkey, name)
     end
 end
 
+local function lOnUpdateSetting(option)
+	if option == "largerTimer" or option == "xlTimer" then	
+		if  FlightMap.Opts.xlTimer then
+			FM_Resize(300)
+		elseif FlightMap.Opts.largerTimer then
+			FM_Resize(250)
+		else
+			FM_Resize(195)
+		end
+	end
+end
+
 local function lSetDefaultData()
     -- Create an empty knowledge record
     if not FlightMap["Knowledge"] then
@@ -89,6 +119,7 @@ local function lSetDefaultData()
 
     -- Any options that don't have a value at all should be defaulted
     for k, v in pairs(FLIGHTMAP_DEFAULT_OPTS) do
+	lOnUpdateSetting(k) -- just to be sure, update here.
         if FlightMap.Opts[k] == nil then
             FlightMap.Opts[k] = v;
         end
@@ -114,6 +145,10 @@ local function lSetDefaultData()
     lStripPoint(FlightMap[FLIGHTMAP_HORDE] or {}, "4:720:593");
     lStripPoint(FlightMap[FLIGHTMAP_HORDE] or {}, "4:75:508");
 end
+
+-- local function(checkNodeName,zoneName)
+	
+-- end
 
 -- Learn about the currently open taxi map
 local function lLearnTaxiNode()
@@ -175,7 +210,11 @@ local function lLearnTaxiNode()
             -- Always update the name and location
             map[destName].Name = TaxiNodeName(index);
             map[destName].Location.Taxi = { x = mx, y = my };
+			
+			-- if string.find(map[destName].Name, BabbleZone["Coldarra"]) then 
+			
         end
+		-- print(index,destName,map[destName].Name) 
     end
 
     -- If the current node was found (should always be, but... eh.)
@@ -315,7 +354,7 @@ end
 
 -- Add node name and location into the given tooltip.  If the source node is
 -- given, also show any stop-off nodes along the way.
-local function lAddFlightsForNode(tooltip, node, prefix, source)
+local function lAddFlightsForNode(tooltip, node, prefix, source, skip)
     -- Sanitize prefix
     if not prefix then prefix = ""; end
 
@@ -329,6 +368,29 @@ local function lAddFlightsForNode(tooltip, node, prefix, source)
 
     -- Get name of node
     local name = data.Name;
+	-- if name == "Schattenmond, Schattenmondtal" then name = "XXXX" end
+	-- print(name)
+	if skip then
+		if AddonTable.NodeNamesShort[name] then
+			name = AddonTable.NodeNamesShort[name]
+		else
+			local temp = {}
+			for str in string.gmatch(name, "([^"..",".."]+)") do
+				table.insert(temp, str)
+			end
+			if #temp > 0 then
+				-- print(#temp, name)
+				if #temp == 2 then
+					AddonTable.NodeNamesShort[name] = string.gsub(temp[1], '^%s*(.-)%s*$', '%1')
+				elseif #temp==3 then
+					AddonTable.NodeNamesShort[name] = string.gsub(temp[2], '^%s*(.-)%s*$', '%1')
+				else
+					AddonTable.NodeNamesShort[name] = temp[1]
+				end
+			end
+			name = AddonTable.NodeNamesShort[name]
+		end
+	end
 
     -- And its zone location, if that's known
     local locn = "";
@@ -416,7 +478,8 @@ local function lUpdateTooltip(self, zoneName)
     -- FlightMapTooltip:AddLine("\n");
     for node, data in pairs(nodes) do
         if FlightMapUtil.knownNode(node) or FlightMap.Opts.showAllInfo then
-            flights = flights + lAddFlightsForNode(FlightMapTooltip, node, "");
+            -- function lAddFlightsForNode(tooltip, node, prefix, source, skip)
+			flights = flights + lAddFlightsForNode(FlightMapTooltip, node, "",nil,true);
         end
     end
 
@@ -468,6 +531,8 @@ end
 local function lShowNodePOI(node, data, space, num)
     -- Ensure the coordinate space is known
     if not data.Location[space] then return false; end
+	-- only show icons that my class can use
+    if data.Class and data.Class ~= AddonTable.PlayerClass then return false; end
 
     -- Get the coordinates
     local x = data.Location[space].x;
@@ -496,9 +561,30 @@ local function lShowNodePOI(node, data, space, num)
         if not FlightMap.Opts.showAllInfo then
             return false;
         end
-        button:SetNormalTexture(FLIGHTMAP_POI_OTHER);
+		
+		if data.Quest then 
+			-- check for Quest
+			local alpha = 0.5
+			local tex = FLIGHTMAP_POI_QUESTNONE
+			for k,v in ipairs(data.Quest) do
+				if AddonTable.QuestsCompleted[v] then 
+					alpha = 0.8;
+					tex = FLIGHTMAP_POI_QUEST
+					-- print("quest",v,"done!\n adding",node) 
+				end
+			end
+			button:SetNormalTexture(tex);
+			button:SetAlpha(alpha);
+		else
+			-- Default icon
+			button:SetNormalTexture(FLIGHTMAP_POI_OTHER);
+			button:SetAlpha(0.8);
+		end
     else
         button:SetNormalTexture(FLIGHTMAP_POI_KNOWN);
+		button:SetAlpha(1);
+		
+		-- print("fmap --- node:", node, num)	-- DEBUG
     end
 
     -- Set all data
@@ -507,6 +593,7 @@ local function lShowNodePOI(node, data, space, num)
     button.node = node;
     button:SetPoint("CENTER", "WorldMapDetailFrame",
             "BOTTOMLEFT", x, y);
+    button:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 20)
     button:Show();
 
     -- Done!
@@ -653,6 +740,7 @@ function FlightMapPOIButton_OnEnter(self)
         WorldMapTooltip:SetOwner(self, "ANCHOR_LEFT");
     else
         WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT");
+	WorldMapTooltip:SetFrameLevel(self:GetFrameLevel() + 1)	-- help put tooltips in front
     end
     lAddFlightsForNode(WorldMapTooltip, self.node, "");
     WorldMapTooltip:Show();
@@ -678,6 +766,7 @@ function FlightMap_OnSlashCmd(args)
             DEFAULT_CHAT_FRAME:AddMessage("|cffcc9010" .. cmd .. "|r " .. desc,
                 1.0, 1.0, 1.0);
         end
+	InterfaceOptionsFrame_OpenToCategory(InterfaceOptionsFlightMapPanel)
     end
 end
 
@@ -696,6 +785,10 @@ function FlightMap_OnLoad(self)
 
     -- Register for VARIABLES_LOADED to talk to myAddOns
     self:RegisterEvent("VARIABLES_LOADED");
+	
+    self:RegisterEvent("PLAYER_ENTERING_WORLD");
+	
+    self:RegisterEvent("QUEST_QUERY_COMPLETE");
 end
 
 function FlightMap_OnEvent(self, event)
@@ -704,6 +797,24 @@ function FlightMap_OnEvent(self, event)
         lLearnTaxiNode();
     elseif (event == "VARIABLES_LOADED") then
         lSetDefaultData();
+    elseif (event == "PLAYER_ENTERING_WORLD") then	-- called only ONCE!!
+		self:UnregisterEvent("PLAYER_ENTERING_WORLD");
+		
+		local _, englishClass 	= UnitClass("player");
+		local englishFaction 	= UnitFactionGroup("player");
+		AddonTable.PlayerClass 	= englishClass
+		AddonTable.PlayerFaction = englishFaction
+		
+		-- print("fmap --- ", AddonTable.PlayerClass, AddonTable.PlayerFaction)	-- DEBUG
+		
+		if AddonTable.QuestsCompleted == nil then
+			QueryQuestsCompleted();		-- fetch completed quests
+		end
+		
+    elseif (event == "QUEST_QUERY_COMPLETE") then
+		AddonTable.QuestsCompleted = GetQuestsCompleted()
+		-- print("fmap --- QUEST_QUERY_COMPLETE")
+		-- AddonTable.QuestsCompleted[12522]=true
     end
 end
 
@@ -726,6 +837,7 @@ function FlightMapOptionsFrame_OnLoad(self)
         box.setFunc = function(value)
             if value == "0" then value = false end
             FlightMap.Opts[option.option] = value
+	    lOnUpdateSetting(option.option)
         end
         box.GetValue = function() return (FlightMap.Opts[option.option] and "1" or "0") end
 

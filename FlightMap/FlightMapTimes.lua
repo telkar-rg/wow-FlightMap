@@ -1,5 +1,10 @@
-FLIGHTMAPTIMES_FADESTEP  = 0.05;
-FLIGHTMAPTIMES_FLASHSTEP = 0.05;
+local AddonName, AddonTable = ...
+local FlightMapUtil = AddonTable.FlightMapUtil
+
+local FLIGHTMAPTIMES_FADESTEP  = 0.05;
+local FLIGHTMAPTIMES_FLASHSTEP = 0.05;
+AddonTable.FLIGHTMAPTIMES_FADESTEP  = FLIGHTMAPTIMES_FADESTEP
+AddonTable.FLIGHTMAPTIMES_FLASHSTEP = FLIGHTMAPTIMES_FLASHSTEP
 
 -- Hooked functions
 local lFMT_OldTakeTaxiNode;
@@ -237,19 +242,26 @@ function FlightMapTimes_OnUpdate(self)
         end
 
         -- Update the spark, status bar and label
+	local timing
         if (self.endTime) then
             local remains = self.endTime - now;
-            label = label .. FlightMapUtil.formatTime(remains, true);
+            timing = FlightMapUtil.formatTime(remains, true);
+	    -- label = label .. FlightMapUtil.formatTime(remains, true);
             local sparkPos = ((now - self.startTime)
-                            / (self.endTime - self.startTime)) * 195;
+                            / (self.endTime - self.startTime)) * FlightMapTimesFrame:GetWidth(); -- default is 195, generified by Moncai;
             FlightMapTimesSpark:SetPoint("CENTER",
                     "FlightMapTimesFrame", "LEFT", sparkPos, 2);
             FlightMapTimesFrame:SetValue(now);
         else
-            label = label .. string.format(FLIGHTMAP_TIMING,
+            timing = string.format(FLIGHTMAP_TIMING,
                     FlightMapUtil.formatTime(now - self.startTime));
         end
-        FlightMapTimesText:SetText(label);
+	
+	 if (strlen(label..timing)> (FlightMapTimesText.tw or 27) ) then label = strsub(label,
+                1,( (FlightMapTimesText.tw or 27) -strlen(timing)-3)) .. "... "; end
+		
+        label = label .. timing;
+        FlightMapTimesText:SetText(label); -- updated for long names not fitting. This should be done with a dummy label or something similar to get better results.
 
         -- If alpha is below one, fade-in is active
         local alpha = self:GetAlpha();
@@ -259,6 +271,23 @@ function FlightMapTimes_OnUpdate(self)
             self:SetAlpha(alpha);
         end
     end
+end
+
+function FM_Resize(width)
+	if not width or width < 1 then 
+		
+		return 
+	end
+	FlightMapTimesFrame:SetWidth(width)
+	FlightMapTimesText:SetWidth(width-10)
+
+	local texturew = 256 * (width / 195)
+	FlightMapTimesFlash:SetWidth(texturew)
+	FlightMapTimesBorder:SetWidth(texturew)
+
+	FlightMapTimesText.tw = width / 7.22
+	
+	-- if Print then Print(("DEBUG: Resize to %.2f %.2f with charlim %d"):format(width, texturew, width / 7.22)) end
 end
 
 -- Hookable function: display a flight bar

@@ -1,6 +1,16 @@
+local AddonName, AddonTable = ...
+local FLIGHTMAP_SUBZONES = AddonTable.FLIGHTMAP_SUBZONES
+
+
+-- local FLIGHTMAP_LINE_SIZE 	= AddonTable.FLIGHTMAP_LINE_SIZE;
+-- local FLIGHTMAP_TEX_UP 		= AddonTable.FLIGHTMAP_TEX_UP;
+-- local FLIGHTMAP_TEX_DOWN 	= AddonTable.FLIGHTMAP_TEX_DOWN;
+
+
 -- Utility functions for FlightMap
 
-FlightMapUtil = {};
+AddonTable.FlightMapUtil = {};
+local FlightMapUtil = AddonTable.FlightMapUtil
 
 ------- Data access functions
 
@@ -30,20 +40,53 @@ FlightMapUtil.getFlightMap = function()
     -- Return default flight data for the specified faction
     local function lGetFactionDefaults(faction)
         local map = {};
-        for k, v in pairs(FLIGHTMAP_FLIGHTS) do
+        for k, v in pairs(AddonTable.FLIGHTMAP_FLIGHTS) do
             if v.Faction == nil or v.Faction == faction then
-                map[k] = v;
+				map[k] = v;
             end
         end
         return map;
     end
 
-    local faction = UnitFactionGroup("player");
+    local faction = AddonTable.PlayerFaction
+	
     if not faction then return {}; end
     if not FlightMap[faction] then
         FlightMap[faction] = lGetFactionDefaults(faction);
     end
     return FlightMap[faction];
+end
+
+-- Reload default flights into current database if needed
+FlightMapUtil.repairFlightMap = function()
+	local faction = UnitFactionGroup("player");
+    local _, englishClass = UnitClass("player");
+	
+	if not faction then return; end
+	if not FlightMap[faction] then FlightMap[faction] = {} end
+	
+        local map = {};
+        for k, v in pairs(AddonTable.FLIGHTMAP_FLIGHTS) do
+		if (FlightMap[faction][k] == nil) and (v.Faction == nil or v.Faction == faction) then
+			FlightMap[faction][k] = v;
+		end
+        end
+end
+
+-- Reload all default flights into current database
+FlightMapUtil.resetFlightMap = function()
+	local faction = UnitFactionGroup("player");
+    local _, englishClass = UnitClass("player");
+	
+	if not faction then return; end
+	if not FlightMap[faction] then FlightMap[faction] = {} end
+	
+        local map = {};
+        for k, v in pairs(AddonTable.FLIGHTMAP_FLIGHTS) do
+		if (v.Faction == nil or v.Faction == faction) then
+			FlightMap[faction][k] = v;
+		end
+        end
 end
 
 -- Returns true if the current character has seen a given node;
@@ -213,20 +256,20 @@ FlightMapUtil.drawLine = function(parent, texture, x1, y1, x2, y2)
     if dy < dx then clipsize = dy; end
 
     -- Now normalize the clipping size to 0-1
-    clipsize = clipsize / FLIGHTMAP_LINE_SIZE;
+    clipsize = clipsize / AddonTable.FLIGHTMAP_LINE_SIZE;
     if clipsize > 1 then clipsize = 1; end
 
     local anchorPoint = "NONE";
     if y1 > y2 then       -- Case 1: source ABOVE dest
         -- Set correct texture
-        texture:SetTexture(FLIGHTMAP_TEX_UP);
+        texture:SetTexture(AddonTable.FLIGHTMAP_TEX_UP);
         -- Use the bottom left corner of it
         texture:SetTexCoord(0, clipsize, 1 - clipsize, 1);
         -- Place the bottom left corner
         anchorPoint = "BOTTOMLEFT";
     else                        -- Case 2: source BELOW dest
         -- Set correct texture
-        texture:SetTexture(FLIGHTMAP_TEX_DOWN);
+        texture:SetTexture(AddonTable.FLIGHTMAP_TEX_DOWN);
         -- Use the top left corner of it
         texture:SetTexCoord(0, clipsize, 0, clipsize);
         -- Place the top left corner

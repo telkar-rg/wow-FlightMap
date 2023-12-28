@@ -1,3 +1,14 @@
+3.3.3b2	April 26, 2010
+	* New: Optionally larger timer frame, see options.
+	* Options window now shows on /fmap
+	* Minor bug fixes
+	* Brought to you by Moncai
+3.3.3b	April 21, 2010
+	* Version update
+	* New flightpaths added
+	* Fix for long destination names
+	* Restructuring for maintainability
+	* Brought to you by the author of Moncai Compare and Moncai Quest Tracker
 3.3	Dec 30, 2009
 	* WoW 3.3 version change
 3.1	May 17, 2009
